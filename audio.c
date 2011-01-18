@@ -18,6 +18,7 @@ typedef struct Chunk_s {
 } Chunk;
 
 typedef struct {
+    int ended;
     unsigned int nb_chunks;
     Chunk *chunks_f;
     Chunk *chunks_l;
@@ -26,10 +27,61 @@ typedef struct {
 static void audio_callback(void *udata, Uint8 *stream, int len)
 {
     Song *song = (Song*)udata;
-    /* TODO : synthesize */
+    static float ampl = 1.0f;
+    static int pos = 0;
+    static Chunk *chunk = NULL;
+    static size_t chunk_len = 0;
     int i = 0;
+
+    if(!chunk)
+    {
+        size_t j;
+        chunk = song->chunks_f;
+        for(j = 0; j < chunk->nb_channels; j++)
+            if(chunk->channels[j]->length > chunk_len)
+                chunk_len = chunk->channels[j]->length;
+    }
+
     for(; i < len; i++)
+    {
+        size_t j;
         stream[i] = 0;
+        if(song->ended)
+            continue;
+        for(j = 0; j < chunk->nb_channels; j++)
+        {
+            if(chunk->channels[j]->length > chunk->pos)
+            {
+                float freq = chunk->channels[j]->notes[chunk->pos];
+                stream[i] += ampl * sinf(2*M_PI*freq*pos/44100.f);
+            }
+        }
+        ampl *= 0.9998;
+
+        pos++;
+        if(pos == 44100)
+        {
+            ampl = 120.0;
+            pos = 0;
+            /* next note in chunk */
+            chunk->pos++;
+            if(chunk->pos >= chunk_len)
+            {
+                /* next chunk in song */
+                chunk = chunk->next;
+                if(!chunk)
+                {
+                    if(g_debug)
+                        fprintf(stderr, "Song finished\n");
+                    song->ended = 1;
+                }
+                else if(g_debug)
+                    fprintf(stderr, "Moving to next chunk\n");
+            }
+            else if(g_debug)
+                fprintf(stderr, "Moving to next note\n");
+        }
+    }
 }
 
 typedef union {
@@ -188,6 +240,7 @@ static Song *read_song(FILE *file)
     Command command;
     Song *song = malloc(sizeof(Song));
     Chunk *chunk = NULL;
+    song->ended = 0;
     song->nb_chunks = 0;
     song->chunks_f = song->chunks_l = NULL;
     if(g_debug)
@@ -248,7 +301,7 @@ static Song *read_song(FILE *file)
     }
     if(g_debug)
         fprintf(stderr, "Song file parsed\n");
-    return NULL;
+    return song;
 }
 
 int play(FILE *file, int debug)
@@ -263,7 +316,7 @@ int play(FILE *file, int debug)
     if(g_debug)
         fprintf(stderr, "Initializing SDL...\n");
 
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
+    SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
     audiospec.freq = 44100;
     audiospec.format = AUDIO_S16SYS;
     audiospec.channels = 2;
@@ -280,7 +333,9 @@ int play(FILE *file, int debug)
         fprintf(stderr, "Starting audio...\n");
 
     SDL_PauseAudio(0);
-    SDL_SetVideoMode(200, 100, 32, 0);
+
+    while(!song->ended)
+        SDL_Delay(500);
 
     if(g_debug)
         fprintf(stderr, "Stopping audio and exiting gracefully\n");
