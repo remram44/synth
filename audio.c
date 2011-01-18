@@ -124,9 +124,8 @@ static int read_line(FILE *file, Command *ret)
         char *param = strtok(NULL, token_delim);
         if(!param)
         {
-            if(g_debug)
-                fprintf(stderr, "No parameter given to %c command\n",
-                        ret->command);
+            fprintf(stderr, "No parameter given to %c command\n",
+                    ret->command);
             return -1;
         }
         switch(ret->command)
@@ -145,16 +144,14 @@ static int read_line(FILE *file, Command *ret)
                 ret->number.param = strtol(param, &endptr, 10);
                 if(*endptr != '\0')
                 {
-                    if(g_debug)
-                        fprintf(stderr, "Non-numeric parameter to %c command\n",
-                                ret->command);
+                    fprintf(stderr, "Non-numeric parameter to %c command\n",
+                            ret->command);
                     return -1;
                 }
             }
             break;
         default:
-            if(g_debug)
-                fprintf(stderr, "Unknown command %c\n", ret->command);
+            fprintf(stderr, "Unknown command %c\n", ret->command);
             return -1;
         }
     }
@@ -294,8 +291,7 @@ static Song *read_song(FILE *file)
     }
     if(chunk->pos != chunk->nb_channels)
     {
-        if(g_debug)
-            fprintf(stderr, "Missing %d channels in chunk\n",
+        fprintf(stderr, "Missing %d channels in chunk\n",
                 chunk->nb_channels - chunk->pos);
         return NULL;
     }
