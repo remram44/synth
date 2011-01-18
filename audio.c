@@ -27,13 +27,13 @@ typedef struct {
 static void audio_callback(void *udata, Uint8 *stream, int len)
 {
     Song *song = (Song*)udata;
-    static float ampl = 1.0f;
-    static int pos = 0;
+    static float ampl = 0.0f;
+    static int pos = 999999;
     static Chunk *chunk = NULL;
     static size_t chunk_len = 0;
     int i = 0;
 
-    if(!chunk)
+    if(!chunk && !song->ended)
     {
         size_t j;
         chunk = song->chunks_f;
@@ -53,15 +53,15 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
             if(chunk->channels[j]->length > chunk->pos)
             {
                 float freq = chunk->channels[j]->notes[chunk->pos];
-                stream[i] += ampl * sinf(2*M_PI*freq*pos/44100.f);
+                stream[i] += (int)(ampl * sinf(2.f*M_PI*freq*pos/44100.f));
             }
         }
-        ampl *= 0.9998;
+        ampl *= 0.99998;
 
         pos++;
-        if(pos == 44100)
+        if(pos >= 44100)
         {
-            ampl = 120.0;
+            ampl = 80.0;
             pos = 0;
             /* next note in chunk */
             chunk->pos++;
@@ -269,7 +269,7 @@ static Song *read_song(FILE *file)
                 Channel *channel = find_channel(song, &chunk);
 
                 /* fill it with notes! */
-                channel->length = strlen(command.string.param + 1);
+                channel->length = strlen(command.string.param);
                 channel->notes = malloc(sizeof(float) * channel->length);
                 for(i = 0; i < channel->length; i++)
                     channel->notes[i] = note2freq(command.string.param[i]);
