@@ -225,7 +225,7 @@ static float note2freq(char note)
 static Channel *find_channel(Song *song, Chunk **chunk)
 {
     /* last chunk is finished */
-    if((*chunk)->pos == (*chunk)->nb_channels)
+    if(*chunk && (*chunk)->pos == (*chunk)->nb_channels)
     {
         (*chunk)->pos = 0;
         *chunk = NULL;
