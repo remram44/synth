@@ -27,7 +27,7 @@ typedef struct {
 static void audio_callback(void *udata, Uint8 *stream, int len)
 {
     Song *song = (Song*)udata;
-    static float ampl = 40.0f;
+    static float ampl = 1.0f;
     static int pos = 0;
     static Chunk *chunk = NULL;
     static size_t chunk_len = 0;
@@ -53,7 +53,17 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
             if(chunk->channels[j]->length > chunk->pos)
             {
                 float freq = chunk->channels[j]->notes[chunk->pos];
-                stream[i] += (int)(ampl * sinf(2.f*M_PI*freq*pos/44100.f));
+                float s;
+                switch(chunk->channels[j]->instrument)
+                {
+                case 0:
+                    s = ampl * sinf(2.f*M_PI*freq*pos/44100.f);
+                    break;
+                case 1:
+                    s = sinf(2.f*M_PI*freq*pos/44100.f);
+                    break;
+                }
+                stream[i] += (int)(chunk->channels[j]->volume/2.f * s);
             }
         }
         ampl *= 0.99998;
@@ -61,7 +71,7 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
         pos++;
         if(pos >= 44100)
         {
-            ampl = 40.0;
+            ampl = 1.0;
             pos = 0;
             /* next note in chunk */
             chunk->pos++;
@@ -256,6 +266,26 @@ static Song *read_song(FILE *file)
                 chunk = new_chunk(song, command.number.param);
             }
             break;
+        case 'v':
+            {
+                /* select channel from chunk
+                 * a new chunk may be allocated */
+                Channel *channel = find_channel(song, &chunk);
+
+                /* set the volume */
+                channel->volume = command.number.param;
+            }
+            break;
+        case 'i':
+            {
+                /* select channel from chunk
+                 * a new chunk may be allocated */
+                Channel *channel = find_channel(song, &chunk);
+
+                /* set the instrument */
+                channel->instrument = command.number.param;
+            }
+            break;
         case 'n':
             {
                 size_t i;
@@ -280,8 +310,6 @@ static Song *read_song(FILE *file)
             break;
         case 'l':
         case 'j':
-        case 'v':
-        case 'i':
             fprintf(stderr, "Warning: '%c' is currently unimplemented\n",
                 command.command);
             break;
