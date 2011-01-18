@@ -27,8 +27,8 @@ typedef struct {
 static void audio_callback(void *udata, Uint8 *stream, int len)
 {
     Song *song = (Song*)udata;
-    static float ampl = 0.0f;
-    static int pos = 999999;
+    static float ampl = 40.0f;
+    static int pos = 0;
     static Chunk *chunk = NULL;
     static size_t chunk_len = 0;
     int i = 0;
@@ -61,7 +61,7 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
         pos++;
         if(pos >= 44100)
         {
-            ampl = 80.0;
+            ampl = 40.0;
             pos = 0;
             /* next note in chunk */
             chunk->pos++;
@@ -78,8 +78,6 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
                 else if(g_debug)
                     fprintf(stderr, "Moving to next chunk\n");
             }
-            else if(g_debug)
-                fprintf(stderr, "Moving to next note\n");
         }
     }
 }
@@ -206,7 +204,7 @@ static float note2freq(char note)
     else if(note >= '0' && note <= '9')
         index = note - '0' + 26 + 26;
     else
-        index = 0;
+        return 0.f;
     freq = freqs[index%12];
     index /= 12;
     while(index--)
@@ -295,6 +293,7 @@ static Song *read_song(FILE *file)
                 chunk->nb_channels - chunk->pos);
         return NULL;
     }
+    chunk->pos = 0;
     if(g_debug)
         fprintf(stderr, "Song file parsed\n");
     return song;
