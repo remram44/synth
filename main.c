@@ -5,11 +5,11 @@ int play(FILE *file, int debug);
 
 static void display_help(FILE *file)
 {
-    fprintf(file, "synth [options] <fichier>\n"
-        "Synthétise la musique écrite dans le fichier <fichier>\n"
-        "Options reconnues :\n"
-        "  -h,--help : affiche cette aide et quitte\n"
-        "  -d,--debug : affiche des infos de débogage sur la sortie\n");
+    fprintf(file, "synth [options] <file>\n"
+        "Synthesize music from <file>\n"
+        "Available options:\n"
+        "  -h,--help : displays this help message and exits\n"
+        "  -d,--debug : enables debug output on stderr\n");
 }
 
 int main(int argc, char **argv)
@@ -18,6 +18,7 @@ int main(int argc, char **argv)
     const char *filename = NULL;
 
     (void)argc; /* unused parameter */
+    argv++;
 
     while(*argv)
     {
@@ -30,11 +31,10 @@ int main(int argc, char **argv)
          || !strcmp(*argv, "-v"))
             debug = 1;
         else if(!filename)
-            filename = *++argv;
+            filename = *argv;
         else
         {
-            fprintf(stderr, "Erreur de syntaxe : plusieurs fichiers "
-                "spécifiés\n");
+            fprintf(stderr, "Syntax error: multiple files given\n");
             display_help(stderr);
             return 1;
         }
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     if(!filename)
     {
         if(debug)
-            fprintf(stderr, "Lecture depuis stdin...\n");
+            fprintf(stderr, "Reading from stdin...\n");
         return play(stdin, debug);
     }
     else
@@ -52,11 +52,11 @@ int main(int argc, char **argv)
         FILE *file = fopen(filename, "rb");
         if(!file)
         {
-            fprintf(stderr, "Impossible d'ouvrir le fichier spécifié\n");
+            fprintf(stderr, "Unable to open the file\n");
             return 1;
         }
         if(debug)
-            fprintf(stderr, "Fichier ouvert\n");
+            fprintf(stderr, "File opened\n");
         return play(file, debug);
     }
 }
