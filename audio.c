@@ -66,7 +66,7 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
                 stream[i] += (int)(chunk->channels[j]->volume/2.f * s);
             }
         }
-        ampl *= 0.99998;
+        ampl *= 0.9999;
 
         pos++;
         if(pos >= 44100)
@@ -263,6 +263,8 @@ static Song *read_song(FILE *file)
                             command.number.param);
                 if(command.number.param < 1)
                     return NULL;
+                if(chunk)
+                    chunk->pos = 0;
                 chunk = new_chunk(song, command.number.param);
             }
             break;
