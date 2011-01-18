@@ -1,6 +1,6 @@
 CC = gcc -pedantic -W -Wall -Wextra
 OBJ = main.o audio.o
-BIN = audio
+BIN = synth
 CFLAGS = -g
 LIBS = -g -lSDL
 #RM = rm -f
