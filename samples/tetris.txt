@@ -1,0 +1,16 @@
+l debut
+p 2
+v 60
+i 1
+n 0_vwy_wvt_tw0_ywv_vwy_0_w_t_t___
+v 80
+i 2
+n QcQcQcQcVhVhVhVhUgUgQcQcVhVhVhXY
+p 2
+v 60
+i 1
+n _y_15_310__w0_ywv__wy_0_w_t_t___
+v 80
+i 2
+n aO_O_OVOMY_YMTT_Xj_j_g_jVhVhV___
+j debut

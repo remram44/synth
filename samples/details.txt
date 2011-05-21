@@ -1,0 +1,27 @@
+# Label "debut"
+l begin
+# Number of tracks
+p 2
+# Track 1
+# Volume for this track
+v 80
+# Instrument for this track
+i 0
+# Notes on this track
+n kkkmo_m_kommk___
+# Track 2
+# Volume for this track
+v 30
+# Instrument for this track
+i 1
+# Notes on this track
+n MOQRTVXY
+# Jump back to "begin" label
+j begin
+
+# Notes:
+#  B D   G I K   N P   S U W   Z b   e g i   l n   q s u   x z   2 4 6
+# A C E F H J L M O Q R T V X Y a c d f h j k m o p r t v w y 0 1 3 5 7 8
+#                                                     ^
+#                                                     |
+#                                                   440 Hz
