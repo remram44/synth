@@ -57,10 +57,29 @@ static void audio_callback(void *udata, Uint8 *stream, int len)
                 switch(chunk->channels[j]->instrument)
                 {
                 case 0:
-                    s = ampl * sinf(2.f*M_PI*freq*pos/44100.f);
+                    s = ampl * sinf(M_PI*freq*pos/44100.f);
                     break;
                 case 1:
-                    s = sinf(2.f*M_PI*freq*pos/44100.f);
+                    {
+                        float env = 1.f - pos/44100.f;
+                        env *= 1.f + 0.1f * sinf(10.f*M_PI*pos/44100.f);
+                        s = env * sinf(M_PI*freq*pos/44100.f);
+                    }
+                    break;
+                case 2:
+                    s = sinf(M_PI*freq*pos/44100.f) - 0.3f
+                      + sinf(2.f*M_PI*freq*pos/44100.f) * 0.2f
+                      + sinf(3.f*M_PI*freq*pos/44100.f) * 0.3f
+                      + sinf(4.f*M_PI*freq*pos/44100.f) * 0.2f;
+                    s *= sinf(M_PI*pos/44100.f);
+                    s *= 1.f + 0.1f * sinf(2.f*M_PI*pos/44100.f);
+                    s *= ampl;
+                    break;
+                case 3:
+                    s = fmodf(2.f*freq*pos/44100.f, 2);
+                    if(s > 1.f)
+                        s = 1.f - s;
+                    s -= .5f;
                     break;
                 }
                 stream[i] += (int)(chunk->channels[j]->volume/2.f * s);
