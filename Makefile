@@ -1,21 +1,26 @@
-CC = gcc -pedantic -W -Wall -Wextra
-OBJ = main.o audio.o
-BIN = synth
-CFLAGS = -g
-LIBS = -g -lSDL
-#RM = rm -f
-RM = del /F
+CC = gcc 
+CFLAGS = -g -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -pedantic -W -Wall -Wextra
+LDLIBS = -lSDL -lpthread -lm
 
-.PHONY : all clean
+SRC = main.c audio.c
+OBJ = $(SRC:.c=.o)
 
-all: $(BIN)
+all: main
 
+tetris:
+	./main ./samples/tetris.txt
+
+detail:
+	./main ./samples/details.txt
+
+instru:
+	./main ./samples/instruments.txt
+
+main: $(OBJ)
 
 $(BIN): $(OBJ)
-	$(CC) $(OBJ) -o $(BIN) $(LIBS)
-
-%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	$(RM) $(OBJ)
+	$(RM) $(OBJ) main
+
+.PHONY : all clean tetris instru detail
